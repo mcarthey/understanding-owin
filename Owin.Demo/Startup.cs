@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.Owin;
 using Nancy;
 using Nancy.Owin;
@@ -63,7 +64,15 @@ namespace Owin.Demo
                 }
             });
 
-            // 2. Inject Nancy into pipeline - Issue is that Nancy hogs any requests that come into the pipeline
+            // 2. Inject Web Api into pipeline
+            // need to create web api configuration in order for web api to run
+
+            // ensure all routes are mapped
+            var config = new HttpConfiguration();
+            config.MapHttpAttributeRoutes();
+            app.UseWebApi(config);
+
+            // 3. Inject Nancy into pipeline - Issue is that Nancy hogs any requests that come into the pipeline
             // - this causes the following to not work - 404 error 
             //app.UseNancy();
             // So we could use the IAppBuilder mapping and map nancy to the appropriate application
@@ -73,12 +82,12 @@ namespace Owin.Demo
 
             // pass through Nancy if any of the response codes are predefined
             // This also has the benefit of not ever returning a 404 and just redirecting to the next item in the pipeline
-            app.UseNancy(config =>
+            app.UseNancy(conf =>
             {
-                config.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
+                conf.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
             });
                 
-            // 3. Insert 'Hello World' into the response stream
+            // 4. Insert 'Hello World' into the response stream
             app.Use(async (ctx, next) =>
             {
                 // want to do asyncronous work so added 'async' keyword to delegate
