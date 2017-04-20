@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.Owin;
+using Microsoft.Owin.Security.Cookies;
 using Nancy;
 using Nancy.Owin;
 using Owin.Demo.Middleware;
@@ -64,6 +65,13 @@ namespace Owin.Demo
                 }
             });
 
+            // 5a. Add cookie authentication after Debug so it can still be used
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "ApplicationCookie",
+                LoginPath = new PathString("/Auth/Login")
+            });
+
             // 2. Inject Web Api into pipeline
             // need to create web api configuration in order for web api to run
 
@@ -78,14 +86,15 @@ namespace Owin.Demo
             // So we could use the IAppBuilder mapping and map nancy to the appropriate application
             // Issue is that app now expects /nancy/nancy because Nancy ignores the owin.RequestPathBase and routes based upon owin.RequestPath
             // ie. owin.RequestPathBase + owin.RequestPath = /nancy/nancy
-            //app.Map("/nancy", mappedApp => { mappedApp.UseNancy(); });
+            app.Map("/nancy", mappedApp => { mappedApp.UseNancy(); });
 
             // pass through Nancy if any of the response codes are predefined
             // This also has the benefit of not ever returning a 404 and just redirecting to the next item in the pipeline
-            app.UseNancy(conf =>
-            {
-                conf.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
-            });
+            // Note this does cause a problem when redirecting for authentication so need to use the mapping above in conjunction with MVC
+//            app.UseNancy(conf =>
+//            {
+//                conf.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
+//            });
                 
             // 4. Insert 'Hello World' into the response stream
 //            app.Use(async (ctx, next) =>
