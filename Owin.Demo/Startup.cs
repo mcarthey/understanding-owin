@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using Nancy;
+using Nancy.Owin;
 using Owin.Demo.Middleware;
 
 namespace Owin.Demo
@@ -61,7 +63,22 @@ namespace Owin.Demo
                 }
             });
 
-            // 2. Insert 'Hello World' into the response stream
+            // 2. Inject Nancy into pipeline - Issue is that Nancy hogs any requests that come into the pipeline
+            // - this causes the following to not work - 404 error 
+            //app.UseNancy();
+            // So we could use the IAppBuilder mapping and map nancy to the appropriate application
+            // Issue is that app now expects /nancy/nancy because Nancy ignores the owin.RequestPathBase and routes based upon owin.RequestPath
+            // ie. owin.RequestPathBase + owin.RequestPath = /nancy/nancy
+            //app.Map("/nancy", mappedApp => { mappedApp.UseNancy(); });
+
+            // pass through Nancy if any of the response codes are predefined
+            // This also has the benefit of not ever returning a 404 and just redirecting to the next item in the pipeline
+            app.UseNancy(config =>
+            {
+                config.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
+            });
+                
+            // 3. Insert 'Hello World' into the response stream
             app.Use(async (ctx, next) =>
             {
                 // want to do asyncronous work so added 'async' keyword to delegate
