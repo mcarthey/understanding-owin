@@ -72,6 +72,22 @@ namespace Owin.Demo
                 LoginPath = new PathString("/Auth/Login")
             });
 
+            // 6. Integrate with katana-based authentication 
+            app.Use(async (IOwinContext context, Func<Task> func) =>
+            {
+                // need to verify if the user has been authenticated yet
+                if (context.Authentication.User.Identity.IsAuthenticated)
+                {
+                    Debug.WriteLine("User: " + context.Authentication.User.Identity.Name);
+                }
+                else
+                {
+                    Debug.WriteLine("User not authenticated");
+                }
+                // always need to await the next in pipeline
+                await func();
+            });
+
             // 2. Inject Web Api into pipeline
             // need to create web api configuration in order for web api to run
 
