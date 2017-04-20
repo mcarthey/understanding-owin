@@ -88,15 +88,20 @@ namespace Owin.Demo
             });
                 
             // 4. Insert 'Hello World' into the response stream
-            app.Use(async (ctx, next) =>
-            {
+//            app.Use(async (ctx, next) =>
+//            {
                 // want to do asyncronous work so added 'async' keyword to delegate
                 // added 'await' so delegate doesn't return before the write is complete
                 // ctx.Response provides access to key "owin.ResponseBody" 
                 // - could otherwise cast the object coming out of the dictionary using the 'magic string'
                 // ctx.Environment["owin.ResponseBody"]
-                await ctx.Response.WriteAsync("<html><head></head><body>Hello World</body></html>");
-            });
+//                await ctx.Response.WriteAsync("<html><head></head><body>Hello World</body></html>");
+//            });
+
+            // 5. Asp.Net would never be called with the preceding pipeline in place because it always returns a response
+            // The way asp.net.owin is configured with katana is that if there is no pipeline configured to return a response
+            // it will always be passed on to asp.net mvc - BUT our preceding entry will always return a response therefore
+            // asp.net mvc will never be called
 
         }
     }
