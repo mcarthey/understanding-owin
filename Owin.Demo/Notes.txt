@@ -1,0 +1,24 @@
+﻿# To set up using locally hosted IIS with a different URL
+
+1. Created new IIS site using www.owin.demo for the C:\dev\Repos\Owin\Owin.Demo directory (run inetmgr)
+2. Modified C:\Windows\System32\drivers\etc\hosts to have localhost be www.owin.demo
+3. Modified properties of project in VS to use Local IIS and point to http://www.owin.demo
+
+# Adding Facebook login
+
+1. Go to http://developers.facebook.com and create new app id
+2. Once setup go to Settings->Advanced
+2a. Find "Valid OAuth redirect URIs"
+2b. Add "http://www.owin.demo/signin-facebook" as the URI
+
+3. Add from NuGet: microsoft.owin.security.facebook
+3a. Note that the "signin-facebook" is configurable in the middleware we are going to use but it is fine.
+
+4. Copy App ID and AppSecret from the Basic tab and paste into the following section in Startup.cs
+
+	app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+	{
+		AppId = "",
+		AppSecret = "",
+		SignInAsAuthenticationType = "ApplicationCookie"
+	});

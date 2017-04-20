@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.Facebook;
 using Nancy;
 using Nancy.Owin;
 using Owin.Demo.Middleware;
@@ -72,6 +73,14 @@ namespace Owin.Demo
                 LoginPath = new PathString("/Auth/Login")
             });
 
+            // 7. Add facebook OAuth 2.0 integration
+            app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+            {
+                AppId = "",
+                AppSecret = "",
+                SignInAsAuthenticationType = "ApplicationCookie"
+            });
+            
             // 6. Integrate with katana-based authentication 
             app.Use(async (IOwinContext context, Func<Task> func) =>
             {

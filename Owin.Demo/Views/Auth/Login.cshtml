@@ -9,20 +9,21 @@
 </head>
 <body>
 <div>
-      @using (var form = Html.BeginForm())
-      {
-          <div>
-              @Html.LabelFor(x => x.Username)
-              @Html.TextBoxFor(x => x.Username)
-          </div>
-          <div>
-              @Html.LabelFor(x => x.Password)
-              @Html.PasswordFor(x => x.Password)
-          </div>
-          <div>
-              <input type="submit" value="Log in"/>
-          </div>
-      }
+    @using (var form = Html.BeginForm())
+    {
+        <div>
+            @Html.LabelFor(x => x.Username)
+            @Html.TextBoxFor(x => x.Username)
+        </div>
+        <div>
+            @Html.LabelFor(x => x.Password)
+            @Html.PasswordFor(x => x.Password)
+        </div>
+        <div>
+            <input type="submit" value="Log in"/>
+        </div>
+    }
 </div>
+<div>@Html.ActionLink("Log in with Facebook", "LoginFacebook")</div>
 </body>
 </html>

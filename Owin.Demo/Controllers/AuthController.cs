@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.Owin.Security;
 using Owin.Demo.Models;
 
 namespace Owin.Demo.Controllers
@@ -38,6 +39,16 @@ namespace Owin.Demo.Controllers
         {
             HttpContext.GetOwinContext().Authentication.SignOut("ApplicationCookie");
             return Redirect("/");
+        }
+
+        public ActionResult LoginFacebook()
+        {
+            HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties
+            {
+                RedirectUri = "/secret"
+            }, "Facebook");
+
+            return new HttpUnauthorizedResult();
         }
     }
 }
