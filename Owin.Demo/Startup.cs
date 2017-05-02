@@ -66,6 +66,14 @@ namespace Owin.Demo
                 }
             });
 
+            // 8. Added Logger middleware from http://odetocode.com/blogs/scott/archive/2013/11/12/simple-logging-middleware-katana-part-4.aspx
+            app.UseLoggerMiddleware(new LoggerMiddlewareOptions
+            {
+                Log = (key, value) => Debug.WriteLine("{0}:{1}", key, value),
+                RequestKeys = new[] { "owin.RequestPath", "owin.RequestMethod" },
+                ResponseKeys = new[] { "owin.ResponseStatusCode" }
+            });
+
             // 5a. Add cookie authentication after Debug so it can still be used
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -74,13 +82,13 @@ namespace Owin.Demo
             });
 
             // 7. Add facebook OAuth 2.0 integration
-            app.UseFacebookAuthentication(new FacebookAuthenticationOptions
-            {
-                AppId = "",
-                AppSecret = "",
-                SignInAsAuthenticationType = "ApplicationCookie"
-            });
-            
+            //app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+            //{
+            //    AppId = "",
+            //    AppSecret = "",
+            //    SignInAsAuthenticationType = "ApplicationCookie"
+            //});
+
             // 6. Integrate with katana-based authentication 
             app.Use(async (IOwinContext context, Func<Task> func) =>
             {
@@ -116,21 +124,21 @@ namespace Owin.Demo
             // pass through Nancy if any of the response codes are predefined
             // This also has the benefit of not ever returning a 404 and just redirecting to the next item in the pipeline
             // Note this does cause a problem when redirecting for authentication so need to use the mapping above in conjunction with MVC
-//            app.UseNancy(conf =>
-//            {
-//                conf.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
-//            });
-                
+            //            app.UseNancy(conf =>
+            //            {
+            //                conf.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound);
+            //            });
+
             // 4. Insert 'Hello World' into the response stream
-//            app.Use(async (ctx, next) =>
-//            {
-                // want to do asyncronous work so added 'async' keyword to delegate
-                // added 'await' so delegate doesn't return before the write is complete
-                // ctx.Response provides access to key "owin.ResponseBody" 
-                // - could otherwise cast the object coming out of the dictionary using the 'magic string'
-                // ctx.Environment["owin.ResponseBody"]
-//                await ctx.Response.WriteAsync("<html><head></head><body>Hello World</body></html>");
-//            });
+            //            app.Use(async (ctx, next) =>
+            //            {
+            // want to do asyncronous work so added 'async' keyword to delegate
+            // added 'await' so delegate doesn't return before the write is complete
+            // ctx.Response provides access to key "owin.ResponseBody" 
+            // - could otherwise cast the object coming out of the dictionary using the 'magic string'
+            // ctx.Environment["owin.ResponseBody"]
+            //                await ctx.Response.WriteAsync("<html><head></head><body>Hello World</body></html>");
+            //            });
 
             // 5. Asp.Net would never be called with the preceding pipeline in place because it always returns a response
             // The way asp.net.owin is configured with katana is that if there is no pipeline configured to return a response

@@ -172,9 +172,12 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Middleware\DebugMiddleware.cs" />
-    <Compile Include="Middleware\DebugMiddlewareExtensions.cs" />
-    <Compile Include="Middleware\DebugMiddlewareOptions.cs" />
+    <Compile Include="Middleware\Logger\LoggerMiddleware.cs" />
+    <Compile Include="Middleware\Logger\LoggerMiddlewareExtensions.cs" />
+    <Compile Include="Middleware\Logger\LoggerMiddlewareOptions.cs" />
+    <Compile Include="Middleware\Debug\DebugMiddleware.cs" />
+    <Compile Include="Middleware\Debug\DebugMiddlewareExtensions.cs" />
+    <Compile Include="Middleware\Debug\DebugMiddlewareOptions.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Modules\NancyDemoModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
