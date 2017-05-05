@@ -22,3 +22,86 @@
 		AppSecret = "",
 		SignInAsAuthenticationType = "ApplicationCookie"
 	});
+
+# Page Lifecycle
+https://msdn.microsoft.com/en-us/library/ms178473(v=vs.140).aspx
+
+# Create Custom HTTP Modules
+https://msdn.microsoft.com/en-us/library/ms227673(v=vs.85).aspx
+
+# Registering the HTTP Module 
+* Note there are differences in how the application registers this depending upon the application pool.
+  You will use either of the two registration methods below in the web.config
+
+<configuration>
+    <system.web>
+        <httpModules>
+           <add name="HelloWorldModule" type="HelloWorldModule"/>
+        </httpModules>
+    </system.web>
+</configuration>
+
+OR
+<configuration>
+  <system.webServer>
+    <modules>
+      <add name="HelloWorldModule" type="HelloWorldModule" />
+    </modules>
+  </system.webServer>
+</configuration>
+
+# Error possible - use the alternate configuration above if necessary
+An ASP.NET setting has been detected that does not apply in Integrated managed pipeline mode.
+
+http://stackoverflow.com/questions/4209999/an-asp-net-setting-has-been-detected-that-does-not-apply-in-integrated-managed-p
+
+Classic mode is limited to an ASP.NET pipeline that cannot interact with the IIS pipeline. Essentially a request comes in and if IIS 6/Classic has been told, through server configuration, that ASP.NET can handle it then IIS hands off the request to ASP.NET and moves on. The significance of this can be gleaned from an example. If I were to authorize access to static image files, I would not be able to do it with an ASP.NET module because the IIS 6 pipeline will handle those requests itself and ASP.NET will never see those requests because they were never handed off.* On the other hand, authorizing which users can access a .ASPX page such as a request for Foo.aspx is trivial even in IIS 6/Classic because IIS always hands those requests off to the ASP.NET pipeline. In Classic mode ASP.NET does not know what it hasn't been told and there is a lot that IIS 6/Classic may not be telling it.
+Integrated mode is recommended because ASP.NET handlers and modules can interact directly with the IIS pipeline. No longer does the IIS pipeline simply hand off the request to the ASP.NET pipeline, now it allows ASP.NET code to hook directly into the IIS pipeline and all the requests that hit it. This means that an ASP.NET module can not only observe requests to static image files, but can intercept those requests and take action by denying access, logging the request, etc.
+
+# Modules <modules>
+https://www.iis.net/configreference/system.webserver/modules
+The <modules> element defines the native-code modules and managed-code modules that are registered for an application. As a part of Internet Information Services (IIS) request pipeline processing, IIS calls each module listed in the <modules> element on every request. You commonly use modules to implement customized functionality, such as security, statistics, and logging, or customized content processing, such as adding customized headers or footers.
+
+# Unit Tests
+
+In writing the interface for the HttpModule for logging I was attempting to write a couple of unit tests.  Typically, as you might know, unit tests are a separate project within the Visual Studio solution.  Since it's a separate solution you add a reference to the primary project to reference the namespaces and classes under test.  
+Before I continue I should mention that the HttpModule is a bit unique in that it is created under a separate directory named App_Code to be registered as a module. There are definitely other ways to do this but the point is the compilation mechanism used by VS which impacted my unit tests.
+The issue I uncovered was that, despite adding a reference to the primary project, I was unable to reference the objects within the library.  I checked the Object Browser (right-click on the library) to verify the namespaces and discovered something interesting.  In order for the HttpModule to be registered with the webserver (which can be seen in the IIS Manager within the Modules section) it needs to be compiled as a separate "Project" (despite being in the same actual project).  
+In my example via the Object Browser I discovered there were two projects with the same "Owin.Demo" name, one of which had the following.
+
+Project Owin.Demo
+	namespace Owin.Demo
+		Member of App_Code.1wx1fvkp
+
+It appears that Visual Studio compiles two libraries within the same namespace and, therefore, you cannot simply add a reference to the code within the App_Code directory.  Ultimately the two compiled libraries are merged and only one is available, ie. only Owin.Demo.dll exists.
+In order to access the library prior to merging you can add the following to the bottom of your Unit Test .csproj.
+
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.-->
+  <Target Name="BeforeBuild">
+    <AspNetCompiler VirtualPath="Owin.Demo" TargetPath="$(ProjectDir)\OwinDemo_Precompiled" Force="true" Debug="true" />
+  </Target>
+
+In this example I can access \Owin.Tests\OwinDemo_Precompiled\bin\App_Code.dll and reference that dll from within my testing project allowing me to write tests against the HttpModule.
+
+# 
+
+One thing I didn't mention is that this is also driven by the application pool within IIS and affects the registration method in the web.config.  You may see the error if it's not registered properly for the pool.
+
+* An ASP.NET setting has been detected that does not apply in Integrated managed pipeline mode.
+
+The reason is that you have the option to register this module in two different ways.  Most recommend using <httpModules> but it resulted in the error seen above.  
+
+Your options are:
+
+<system.web>
+	<httpModules>
+
+<system.webServer>
+	<modules>
+
+In my case I registered in <modules> but I have also ready that you may be able to get around this with a switch from "Web Site Project" to "Web Application Project" although I haven't tested this.
+
+
+
+
